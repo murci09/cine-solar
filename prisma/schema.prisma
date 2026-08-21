@@ -1,0 +1,50 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum MovieFormat {
+  TWO_D
+  THREE_D
+  IMAX
+  FOUR_DX
+  DOLBY_ATMOS
+}
+
+model Movie {
+  id          String        @id @default(cuid())
+  title       String
+  synopsis    String
+  durationMin Int
+  rating      String
+  posterUrl   String
+  backdropUrl String
+  formats     MovieFormat[]
+  shows       Showtime[]
+  createdAt   DateTime      @default(now())
+}
+
+model Showtime {
+  id        String      @id @default(cuid())
+  movieId   String
+  movie     Movie       @relation(fields: [movieId], references: [id])
+  startTime DateTime
+  price     Decimal     @db.Decimal(10, 2)
+  format    MovieFormat
+  tickets   Ticket[]
+}
+
+model Ticket {
+  id         String   @id @default(cuid())
+  showtimeId String
+  showtime   Showtime @relation(fields: [showtimeId], references: [id])
+  seatRow    String
+  seatNumber Int
+  price      Decimal  @db.Decimal(10, 2)
+
+  @@unique([showtimeId, seatRow, seatNumber])
+}
